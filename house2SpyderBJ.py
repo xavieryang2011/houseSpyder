@@ -47,8 +47,7 @@ class HouseSpider:
         urlList = []
         for index in range(page):
             if index == 0:
-                i=1
-                # urlList.append(self.baseUrl + self.urlDir[name])
+                urlList.append(self.baseUrl + self.urlDir[name])
             else:
                 urlList.append(self.baseUrl + self.urlDir[name] + "i3" + str(index + 1) + "/")
 
@@ -56,12 +55,13 @@ class HouseSpider:
 
 
     # MongoDB 存储数据结构
-    def getRentMsg(self, title, rooms, area, price, address, traffic, region, direction):
+    def getRentMsg(self, title, rooms, area, price,sumprice, address, traffic, region, direction):
         return {
             "title": title,  # 标题
             "rooms": rooms,  # 房间数
             "area": area,  # 平方数
             "price": price,  # 价格
+            "sumprice": sumprice, # 总价
             "address": address,  # 地址
             "traffic": traffic,  # 交通描述
             "region": region,  # 区、（福田区、南山区）
@@ -117,29 +117,26 @@ class HouseSpider:
             pageUrl
         )
         soup = BeautifulSoup(res.text, "html.parser")
-        print(len(pageUrl.split("/")))
-        if len(pageUrl.split("/"))<3:#首页
+        if len(pageUrl.split("/"))<6:
            divs = soup.find_all("dd", attrs={"class": "info rel floatr"})  # 获取需要爬取得 div
            for div in divs:
             ps = div.find_all("p")
-            
             try:  # 捕获异常，因为页面中有些数据没有被填写完整，或者被插入了一条广告，则会没有相应的标签，所以会报错
                 for index,p in enumerate(ps):  # 从源码中可以看出，每一条 p 标签都有我们想要的信息，故在此遍历 p 标签，
                     text = p.text.strip()
-                    print(text)  # 输出看看是否为我们想要的信息
-                    print("===================================")
+                    # print(text)  # 输出看看是否为我们想要的信息
+                    # print("===================================")
                 # 爬取并存进 MongoDB 数据库
                 roomMsg = ps[1].text.split("|")
 
                 # rentMsg 这样处理是因为有些信息未填写完整，导致对象报空
                 area = ps[4].text.strip()[:len(ps[4].text.strip()) - 2]
-                # print(ps[2].text.split("\n")[2])
-                # print("------------")
                 rentMsg = self.getRentMsg(
                     ps[0].text.strip(),
                     roomMsg[0].strip(),
                     int(float(area)),
                     int(ps[len(ps) - 1].text.strip()[:len(ps[len(ps) - 1].text.strip()) - 4]),
+                    0,
                     ps[2].text.split("\n")[2],
                     ps[3].text.strip(),
                     ps[2].text.split("\n")[1],
@@ -168,11 +165,13 @@ class HouseSpider:
                     area=ps[1].text.split("\n")[2].strip().split("|")[1].strip()[:len(ps[1].text.split("\n")[2].strip().split("|")[1].strip())-2]
                     # print(ps[1].text.split("\n")[2].strip().split("|")[1][:len(ps[1].text.split("\n")[2].strip().split("|")[1])-2])
                     price = ds[1].text.strip().split("\n")[1][:len(ds[1].text.strip().split("\n")[1]) - 4]
+                    sumprice=ds[1].text.strip().split("\n")[0][:len(ds[1].text.strip().split("\n")[0])-1]
                     rentMsg = self.getRentMsg(
                         "",
                         rooms,
                         int(float(area)),
                         int(price),
+                        int(sumprice),
                         ps[2].text.split("\n")[4].strip(),
                         "",
                         ps[2].text.split("\n")[2].strip(),
@@ -199,6 +198,6 @@ class HouseSpider:
 
 
 spider = HouseSpider()
-spider.setPage(2)# 设置爬取页数
-spider.setRegion("不限")# 设置爬取区域
+spider.setPage(11)# 设置爬取页数
+spider.setRegion("燕郊")# 设置爬取区域
 spider.startSpicder()# 开启爬虫
