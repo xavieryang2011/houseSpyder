@@ -117,8 +117,10 @@ class HouseSpider:
             pageUrl
         )
         soup = BeautifulSoup(res.text, "html.parser")
-        if len(pageUrl.split("/"))<6:
-           divs = soup.find_all("dd", attrs={"class": "info rel floatr"})  # 获取需要爬取得 div
+        # if len(pageUrl.split("/"))<6:
+        divs = soup.find_all("dd", attrs={"class": "info rel floatr"})  # 获取需要爬取得 div
+        # print(len(divs))
+        if(len(divs)>0):
            for div in divs:
             ps = div.find_all("p")
             try:  # 捕获异常，因为页面中有些数据没有被填写完整，或者被插入了一条广告，则会没有相应的标签，所以会报错
@@ -189,15 +191,20 @@ class HouseSpider:
         self.page = page
 
     def startSpicder(self):
+        db = self.getCollection(self.region)
+        db.delete_many({})
+        i=0
         for url in self.getRegionUrl(self.region, self.page):
             self.getOnePageData(url, self.region)
-            print("=================== one page 分割线 ===========================")
-            print("=================== one page 分割线 ===========================")
-            print("=================== one page 分割线 ===========================")
+            i=i+1
+            print(i)
+            print("i"+"=================== one page 分割线 ===========================")
+            # print("=================== one page 分割线 ===========================")
+            # print("=================== one page 分割线 ===========================")
             time.sleep(5)
 
 
 spider = HouseSpider()
 spider.setPage(11)# 设置爬取页数
-spider.setRegion("燕郊")# 设置爬取区域
+spider.setRegion("海淀")# 设置爬取区域
 spider.startSpicder()# 开启爬虫
