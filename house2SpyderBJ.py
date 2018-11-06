@@ -198,13 +198,13 @@ class HouseSpider:
             self.getOnePageData(url, self.region)
             i=i+1
             print(i)
-            print("i"+"=================== one page 分割线 ===========================")
+            print("=================== one page 分割线 ===========================")
             # print("=================== one page 分割线 ===========================")
             # print("=================== one page 分割线 ===========================")
             time.sleep(5)
 
 
 spider = HouseSpider()
-spider.setPage(11)# 设置爬取页数
-spider.setRegion("海淀")# 设置爬取区域
+spider.setPage(100)# 设置爬取页数
+spider.setRegion("朝阳")# 设置爬取区域
 spider.startSpicder()# 开启爬虫
